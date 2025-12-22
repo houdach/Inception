@@ -12,4 +12,5 @@ RUN apt update && apt install -y \
 EXPOSE 9000
 
 # Start PHP-FPM
-CMD ["php-fpm7.4", "-F"]
+CMD ["php-fpm", "-F"]
+
