@@ -1,3 +1,7 @@
 docker compose -f srcs/docker-compose.yml down -v
 docker compose -f srcs/docker-compose.yml build mariadb
 docker compose -f srcs/docker-compose.yml up -d mariadb
+docker compose -f srcs/docker-compose.yml build wordpress
+docker compose -f srcs/docker-compose.yml up -d wordpress
+docker ps
+docker logs wordpress
