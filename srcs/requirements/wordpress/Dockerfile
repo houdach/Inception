@@ -6,7 +6,7 @@ RUN apt update && apt install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy any tools (optional for now)
-COPY tools/ /tools/
+# COPY tools/ /tools/
 
 # Expose PHP-FPM port
 EXPOSE 9000
