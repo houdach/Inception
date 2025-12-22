@@ -1,0 +1,98 @@
+Step 0 — Install VM software on the host
+
+VirtualBox (or VMware) installed on the host machine.
+
+Ensure the VM can use bridged or NAT networking.
+
+Step 1 — Import or create your Debian VM
+
+Either import an existing VM image (if you exported yours)
+
+Or install Debian fresh in the VM.
+
+Set a username (your 42 login is best) and a password.
+
+Step 2 — Log in to the VM
+
+Log in as your VM user (not root, unless needed for installation).
+
+Step 3 — Update system
+sudo apt update && sudo apt upgrade -y
+
+
+Updates package index and upgrades installed packages.
+
+Step 4 — Install prerequisites for Docker
+sudo apt install -y apt-transport-https ca-certificates curl gnupg lsb-release
+
+
+Needed for Docker repo and secure installation.
+
+Step 5 — Install Docker & Compose
+# Add Docker GPG key
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+
+# Add Docker repo
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] \
+https://download.docker.com/linux/debian $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Install Docker
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+
+
+This installs Docker Engine, CLI, container runtime, and Compose.
+
+Step 6 — Allow user to run Docker
+sudo usermod -aG docker <your_username>
+
+
+Replace <your_username> with your VM login.
+
+Then log out and log back in, or run newgrp docker to apply immediately.
+
+Step 7 — Verify Docker works
+docker run hello-world
+docker compose version
+
+
+Both should run without sudo.
+
+Step 8 — Set up project folder
+cd ~
+git clone <your_inception_repo_url> inception
+cd inception
+mkdir -p /home/<your_username>/data
+
+
+Project root: /home/<login>/inception
+
+Volumes folder: /home/<login>/data
+
+Step 9 — Check .env and secrets
+
+.env file inside srcs/
+
+secrets/ folder with credentials
+
+Example .env:
+
+DOMAIN_NAME=<your_login>.42.fr
+MYSQL_ROOT_PASSWORD=<db_root_password>
+MYSQL_DATABASE=wordpress
+MYSQL_USER=<wordpress_user>
+MYSQL_PASSWORD=<db_password>
+
+Step 10 — Test project structure
+
+Build one service:
+
+docker compose -f srcs/docker-compose.yml build mariadb
+
+
+Run it:
+
+docker compose -f srcs/docker-compose.yml up -d mariadb
+
+
+Make sure no errors occur, volumes are created, and the container runs.
