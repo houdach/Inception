@@ -1,45 +1,3 @@
-# version: "3.8"
-
-# services:
-#   nginx:
-#     build: ./requirements/nginx
-#     networks:
-#       - inception_network
-#     volumes:
-#       - wordpress_files:/var/www/html
-#     restart: always
-
-#   wordpress:
-#     build: ./requirements/wordpress
-#     networks:
-#       - inception_network
-#     volumes:
-#       - wordpress_files:/var/www/html
-#     depends_on:
-#       - mariadb
-#     restart: always
-
-#   mariadb:
-#     build: ./requirements/mariadb
-#     networks:
-#       - inception_network
-#     volumes:
-#       - mariadb_data:/var/lib/mysql
-#     environment:
-#       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-#       MYSQL_DATABASE: ${MYSQL_DATABASE}
-#       MYSQL_USER: ${MYSQL_USER}
-#       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-#     restart: always
-
-# networks:
-#   inception_network:
-#     driver: bridge
-
-# volumes:
-#   mariadb_data:
-#   wordpress_files:
-
 version: "3.8"
 
 services:
@@ -47,5 +5,22 @@ services:
     container_name: mariadb
     build:
       context: ./requirements/mariadb
-    ports:
-      - "3306:3306"
+    env_file:
+      - .env
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - inception
+    restart: always
+
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/login/data/mariadb
+
+networks:
+  inception:
+    driver: bridge
