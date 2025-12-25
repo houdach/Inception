@@ -1,31 +1,17 @@
-NAME = inception
+# Makefile for Inception project
 
-COMPOSE = docker-compose
-COMPOSE_FILE = srcs/docker-compose.yml
+.PHONY: all build up down clean
 
-all: up
+all: build up
+
+build:
+	docker-compose -f srcs/docker-compose.yml build
 
 up:
-	$(COMPOSE) -f $(COMPOSE_FILE) up -d --build
+	docker-compose -f srcs/docker-compose.yml up -d
 
 down:
-	$(COMPOSE) -f $(COMPOSE_FILE) down
+	docker-compose -f srcs/docker-compose.yml down
 
-start:
-	$(COMPOSE) -f $(COMPOSE_FILE) start
-
-stop:
-	$(COMPOSE) -f $(COMPOSE_FILE) stop
-
-restart:
-	$(COMPOSE) -f $(COMPOSE_FILE) restart
-
-clean: down
-	docker system prune -af
-
-fclean: down
-	docker system prune -af --volumes
-
-re: fclean all
-
-.PHONY: all up down start stop restart clean fclean re
+clean:
+	docker-compose -f srcs/docker-compose.yml down -v --rmi all --remove-orphans
