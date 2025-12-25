@@ -2,8 +2,9 @@ version: "3.8"
 
 services:
   mariadb:
-    image: mariadb:10.11
     container_name: mariadb
+    build:
+      context: ./requirements/mariadb
     secrets:
       - db_password
       - db_root_password
@@ -62,7 +63,6 @@ secrets:
 volumes:
   mariadb_data:
   wordpress_data:
-
 
 networks:
   inception:
