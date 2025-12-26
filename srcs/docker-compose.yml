@@ -9,8 +9,8 @@ services:
       - db_password
       - db_root_password
     environment:
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wpuser
+      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
+      MYSQL_USER: ${WORDPRESS_DB_USER}
       MYSQL_PASSWORD_FILE: /run/secrets/db_password
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     volumes:
@@ -29,8 +29,9 @@ services:
     environment:
       WORDPRESS_DB_HOST: mariadb
       WORDPRESS_DB_PORT: 3306
-      WORDPRESS_DB_NAME: wordpress
-      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
+      WORDPRESS_ROOT_USER: ${WORDPRESS_ROOT_USER}
       WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
     volumes:
       - wordpress_data:/var/www/html
@@ -62,7 +63,17 @@ secrets:
 
 volumes:
   mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/mac/data/mariadb
+      o: bind
   wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/mac//data/wordpress
+      o: bind
 
 networks:
   inception:

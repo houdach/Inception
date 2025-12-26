@@ -8,3 +8,4 @@ docker logs wordpress
 RUN apt update && apt install -y php-fpm php-mysql php-cli php-mbstring php-xml php-gd unzip curl \
     && php-fpm -v \
     && rm -rf /var/lib/apt/lists/*
+nginx -g -daemon off

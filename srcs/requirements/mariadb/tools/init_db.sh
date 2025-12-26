@@ -1,35 +1,37 @@
 #!/bin/bash
 set -e
 
-# Create data and socket directories
-mkdir -p /var/lib/mysql /run/mysqld
-chown -R mysql:mysql /var/lib/mysql /run/mysqld
+# 1. Ensure the socket directory exists and has right permissions
+mkdir -p /run/mysqld
+chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
-# Initialize database if empty
+
 if [ ! -d "/var/lib/mysql/mysql" ]; then
-    echo "Initializing MariaDB data directory..."
-    mysqld --initialize-insecure --user=mysql
-fi
+    echo "First run: Initializing MariaDB..."
+    mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
-ROOT_PASSWORD=$(cat /run/secrets/db_root_password)
-DB_PASSWORD=$(cat /run/secrets/db_password)
-DB_NAME=${MYSQL_DATABASE:-wordpress}
-DB_USER=${MYSQL_USER:-wpuser}
+    # Create temporary SQL file
+    tfile=`mktemp`
+    if [ ! -f "$tfile" ]; then exit 1; fi
 
-# Start MariaDB in the background without networking
-mysqld_safe --skip-networking &
-sleep 10
-
-# Create WordPress database and user
-mysql -u root -p"$ROOT_PASSWORD" <<EOF
-CREATE DATABASE IF NOT EXISTS $DB_NAME;
-CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASSWORD';
-GRANT ALL PRIVILEGES ON $DB_NAME.* TO '$DB_USER'@'%';
+    cat << EOF > $tfile
+USE mysql;
+FLUSH PRIVILEGES;
+DELETE FROM mysql.user WHERE User='';
+DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
+ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat /run/secrets/db_root_password)';
+CREATE DATABASE IF NOT EXISTS ${WORDPRESS_DB_NAME};
+CREATE USER IF NOT EXISTS '${WORDPRESS_DB_USER}'@'%' IDENTIFIED BY '$(cat /run/secrets/db_password)';
+GRANT ALL PRIVILEGES ON ${WORDPRESS_DB_NAME}.* TO '${WORDPRESS_DB_USER}'@'%';
 FLUSH PRIVILEGES;
 EOF
 
-# Stop temporary MariaDB
-mysqladmin -u root -p"$ROOT_PASSWORD" shutdown
+    # Run the bootstrap
+    mysqld --user=mysql --bootstrap < $tfile
+    rm -f $tfile
+    echo "MariaDB initialization complete."
+fi
 
-# Start MariaDB in the foreground
-exec mysqld --user=mysql --bind-address=0.0.0.0 --console
+# 3. Start MariaDB
+echo "Starting MariaDB on port 3306..."
+exec mysqld --user=mysql

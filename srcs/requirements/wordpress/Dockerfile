@@ -4,17 +4,21 @@ FROM debian:bookworm
 RUN apt update && apt install -y \
     php-fpm \
     php-mysql \
+    mariadb-client \
     php-gd \
     php-cli \
+    iputils-ping \
     php-curl \
     php-zip \
     php-xml \
     php-mbstring \
-    mariadb-client \
     curl \
     unzip \
     && rm -rf /var/lib/apt/lists/*
-
+# Install WP-CLI
+RUN curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar \
+    && chmod +x wp-cli.phar \
+    && mv wp-cli.phar /usr/local/bin/wp
 # Configure PHP-FPM to listen on 0.0.0.0:9000
 RUN sed -i 's|^listen = .*|listen = 0.0.0.0:9000|' /etc/php/*/fpm/pool.d/www.conf
 

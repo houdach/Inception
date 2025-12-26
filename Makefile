@@ -1,17 +1,16 @@
-# Makefile for Inception project
-
-.PHONY: all build up down clean
-
-all: build up
-
-build:
-	docker-compose -f srcs/docker-compose.yml build
-
-up:
-	docker-compose -f srcs/docker-compose.yml up -d
+all:
+	@mkdir -p /Users/mac/data/mariadb
+	@mkdir -p /Users/mac/data/wordpress
+	docker compose -f srcs/docker-compose.yml up -d --build
 
 down:
-	docker-compose -f srcs/docker-compose.yml down
+	docker compose -f srcs/docker-compose.yml down
 
-clean:
-	docker-compose -f srcs/docker-compose.yml down -v --rmi all --remove-orphans
+clean: down
+	docker system prune -af
+
+fclean: clean
+	@sudo rm -rf /Users/mac/data
+	@docker volume rm $$(docker volume ls -q) 2>/dev/null || true
+
+re: fclean all

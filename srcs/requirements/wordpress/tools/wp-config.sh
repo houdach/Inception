@@ -1,54 +1,60 @@
 #!/bin/sh
-set -e
+# Use set -x to see exactly which command fails in the logs
+set -x
 
-DB_HOST=${WORDPRESS_DB_HOST:-mariadb}
-DB_PORT=${WORDPRESS_DB_PORT:-3306}
-DB_NAME=${WORDPRESS_DB_NAME:-wordpress}
-DB_USER=${WORDPRESS_DB_USER:-wpuser}
-DB_PASSWORD=$(cat ${WORDPRESS_DB_PASSWORD_FILE})
+echo "Waiting for MariaDB at $WORDPRESS_DB_HOST..."
 
-MAX_RETRIES=30
-COUNT=0
-
-echo "Waiting for database $DB_HOST:$DB_PORT..."
-
-until mysqladmin ping -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -p"$DB_PASSWORD" --silent; do
-    COUNT=$((COUNT + 1))
-    if [ $COUNT -ge $MAX_RETRIES ]; then
-        echo "Error: Database not ready after $MAX_RETRIES attempts."
-        exit 1
+# Check connectivity without crashing the script
+while true; do
+    # Try to ping
+    mariadb-admin ping -h"$WORDPRESS_DB_HOST" --silent
+    
+    # Check the exit code of the ping command
+    # 0 = Success (Ready)
+    # 1 = Access Denied (Also means it's Ready, just needs a password later)
+    if [ $? -eq 0 ] || [ $? -eq 1 ]; then
+        echo "MariaDB is alive and responding!"
+        break
     fi
-    echo "Waiting for database... attempt $COUNT"
+
+    echo "MariaDB not ready... sleeping 2s"
     sleep 2
 done
 
-echo "Database is ready!"
+echo "MariaDB is UP!"
+sleep 5
+# Move to the directory where WordPress is installed
+cd /var/www/html
 
-# Generate wp-config.php
-WP_CONFIG_FILE=/var/www/html/wp-config.php
-cat > "$WP_CONFIG_FILE" <<EOF
-<?php
-define('DB_NAME', '$DB_NAME');
-define('DB_USER', '$DB_USER');
-define('DB_PASSWORD', '$DB_PASSWORD');
-define('DB_HOST', '$DB_HOST');
-define('DB_CHARSET', 'utf8mb4');
-define('DB_COLLATE', '');
-define('AUTH_KEY', '$(openssl rand -base64 32)');
-define('SECURE_AUTH_KEY', '$(openssl rand -base64 32)');
-define('LOGGED_IN_KEY', '$(openssl rand -base64 32)');
-define('NONCE_KEY', '$(openssl rand -base64 32)');
-define('AUTH_SALT', '$(openssl rand -base64 32)');
-define('SECURE_AUTH_SALT', '$(openssl rand -base64 32)');
-define('LOGGED_IN_SALT', '$(openssl rand -base64 32)');
-define('NONCE_SALT', '$(openssl rand -base64 32)');
-\$table_prefix = 'wp_';
-define('WP_DEBUG', false);
-if (!defined('ABSPATH')) define('ABSPATH', __DIR__ . '/');
-require_once ABSPATH . 'wp-settings.php';
-EOF
+# Create wp-config.php if it doesn't exist
+if [ ! -f wp-config.php ]; then
+    echo "Creating wp-config.php..."
+    wp config create --allow-root \
+        --dbname="$WORDPRESS_DB_NAME" \
+        --dbuser="$WORDPRESS_DB_USER" \
+        --dbpass="$(cat $WORDPRESS_DB_PASSWORD_FILE)" \
+        --dbhost="$WORDPRESS_DB_HOST"
+fi
 
-chown www-data:www-data "$WP_CONFIG_FILE"
+# Install WordPress if not installed
+if ! wp core is-installed --allow-root; then
+    echo "Installing WordPress..."
+    wp core install --allow-root \
+        --url="$DOMAIN_NAME" \
+        --title="Inception" \
+        --admin_user="$WORDPRESS_ROOT_USER" \
+        --admin_password="$(cat $MYSQL_ROOT_PASSWORD_FILE)" \
+        --admin_email="hdchouai@gmail.com"
 
-# Start PHP-FPM
+    echo "Creating secondary user..."
+    wp user create --allow-root "editor_user" "editor@42.fr" \
+        --role=author \
+        --user_pass="$(cat $WORDPRESS_DB_PASSWORD_FILE)"
+fi
+
+echo "WordPress setup completed. Starting PHP-FPM..."
+# Ensure runtime directory exists
+mkdir -p /run/php
+
+# Final check: start PHP-FPM in foreground
 exec /usr/sbin/php-fpm8.2 -F
