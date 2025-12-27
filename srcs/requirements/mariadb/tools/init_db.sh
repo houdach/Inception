@@ -1,37 +1,31 @@
 #!/bin/bash
 set -e
 
-# 1. Ensure the socket directory exists and has right permissions
+# Load secrets into local variables for clean expansion
+ROOT_P=$(cat /run/secrets/db_root_password)
+USER_P=$(cat /run/secrets/db_password)
+
+# Prepare runtime directory
 mkdir -p /run/mysqld
 chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
-
+# Initialize database if it doesn't exist
 if [ ! -d "/var/lib/mysql/mysql" ]; then
-    echo "First run: Initializing MariaDB..."
+    echo "Initializing MariaDB..."
     mysql_install_db --user=mysql --datadir=/var/lib/mysql
 
-    # Create temporary SQL file
-    tfile=`mktemp`
-    if [ ! -f "$tfile" ]; then exit 1; fi
-
-    cat << EOF > $tfile
+    # Use bootstrap to run SQL commands before server starts
+mysqld --user=mysql --bootstrap << EOF
 USE mysql;
 FLUSH PRIVILEGES;
-DELETE FROM mysql.user WHERE User='';
-DELETE FROM mysql.user WHERE User='root' AND Host NOT IN ('localhost', '127.0.0.1', '::1');
-ALTER USER 'root'@'localhost' IDENTIFIED BY '$(cat /run/secrets/db_root_password)';
-CREATE DATABASE IF NOT EXISTS ${WORDPRESS_DB_NAME};
-CREATE USER IF NOT EXISTS '${WORDPRESS_DB_USER}'@'%' IDENTIFIED BY '$(cat /run/secrets/db_password)';
-GRANT ALL PRIVILEGES ON ${WORDPRESS_DB_NAME}.* TO '${WORDPRESS_DB_USER}'@'%';
+CREATE DATABASE IF NOT EXISTS \`${WORDPRESS_DB_NAME}\`;
+CREATE USER IF NOT EXISTS '${WORDPRESS_DB_USER}'@'%' IDENTIFIED BY '$USER_P';
+GRANT ALL PRIVILEGES ON \`${WORDPRESS_DB_NAME}\`.* TO '${WORDPRESS_DB_USER}'@'%';
+ALTER USER 'root'@'localhost' IDENTIFIED BY '$ROOT_P';
 FLUSH PRIVILEGES;
 EOF
-
-    # Run the bootstrap
-    mysqld --user=mysql --bootstrap < $tfile
-    rm -f $tfile
     echo "MariaDB initialization complete."
 fi
 
-# 3. Start MariaDB
-echo "Starting MariaDB on port 3306..."
-exec mysqld --user=mysql
+# Execute the main process in the foreground
+exec mysqld --user=mysql --console 

@@ -3,16 +3,13 @@ version: "3.8"
 services:
   mariadb:
     container_name: mariadb
-    build:
-      context: ./requirements/mariadb
+    build: ./requirements/mariadb
     secrets:
       - db_password
       - db_root_password
     environment:
-      MYSQL_DATABASE: ${WORDPRESS_DB_NAME}
-      MYSQL_USER: ${WORDPRESS_DB_USER}
-      MYSQL_PASSWORD_FILE: /run/secrets/db_password
-      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
+      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
+      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -21,18 +18,17 @@ services:
 
   wordpress:
     container_name: wordpress
-    build:
-      context: ./requirements/wordpress
+    build: ./requirements/wordpress
     secrets:
       - db_password
       - db_root_password
     environment:
-      WORDPRESS_DB_HOST: mariadb
-      WORDPRESS_DB_PORT: 3306
+      WORDPRESS_DB_HOST: ${WORDPRESS_DB_HOST}
       WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_ROOT_USER: ${WORDPRESS_ROOT_USER}
-      WORDPRESS_DB_PASSWORD_FILE: /run/secrets/db_password
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      WORDPRESS_DB_PASSWORD_FILE: ${WORDPRESS_DB_PASSWORD_FILE}
     volumes:
       - wordpress_data:/var/www/html
     networks:
@@ -43,8 +39,7 @@ services:
 
   nginx:
     container_name: nginx
-    build:
-      context: ./requirements/nginx
+    build: ./requirements/nginx
     ports:
       - "443:443"
     volumes:
@@ -72,7 +67,7 @@ volumes:
     driver: local
     driver_opts:
       type: none
-      device: /Users/mac//data/wordpress
+      device: /Users/mac/data/wordpress
       o: bind
 
 networks:
