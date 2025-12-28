@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-# 1. Wait for MariaDB (Sleep is okay, but a ping loop is better)
 sleep 10
 
 
