@@ -7,7 +7,7 @@ chown -R mysql:mysql /run/mysqld /var/lib/mysql
 
 service mariadb start
 sleep 3
-mysql -u root -e "CREATE USER IF NOT EXISTS '$WORDPRESS_DB_USER'@'%' IDENTIFIED BY '$WORDPRESS_ROOT_USER';"
+mysql -u root -e "CREATE USER IF NOT EXISTS '$WORDPRESS_DB_USER'@'%' IDENTIFIED BY '$WORDPRESS_DB_PASSWORD_FILE';"
 
 mysql -u root -e "CREATE DATABASE IF NOT EXISTS $WORDPRESS_DB_NAME;"
 

@@ -50,6 +50,13 @@ services:
       - wordpress
     restart: always
 
+  redis:
+    container_name: redis
+    build: ./requirements/bonus/redis
+    networks:
+      - inception
+    restart: always
+    
 secrets:
   db_password:
     file: ../secrets/db_password
