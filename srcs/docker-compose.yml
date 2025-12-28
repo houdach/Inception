@@ -4,7 +4,7 @@ services:
   mariadb:
     container_name: mariadb
     build: ./requirements/mariadb
-    image: mariadb
+    image: mariadb:1.0
     secrets:
       - db_password
       - db_root_password
@@ -25,7 +25,7 @@ services:
   wordpress:
     container_name: wordpress
     build: ./requirements/wordpress
-    image: wordpress
+    image: wordpress:1.0
     secrets:
       - db_password
       - db_root_password
@@ -48,7 +48,7 @@ services:
   nginx:
     container_name: nginx
     build: ./requirements/nginx
-    image: nginx
+    image: nginx:1.0
     ports:
       - "443:443"
     volumes:
@@ -62,7 +62,7 @@ services:
   redis:
     container_name: redis
     build: ./requirements/bonus/redis
-    image: redis
+    image: redis:1.0
     networks:
       - inception
     restart: always
