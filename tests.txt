@@ -10,3 +10,5 @@ RUN apt update && apt install -y php-fpm php-mysql php-cli php-mbstring php-xml 
     && rm -rf /var/lib/apt/lists/*
 nginx -g -daemon off
  docker exec nginx openssl s_client -connect localhost:443 -tls1_3
+ curl -k -d "author=user_inception&email=user@42.fr&comment=HelloWorld&submit=Post Comment" \
+  -X POST https://login.42.fr/wp-comments-post.php

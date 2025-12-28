@@ -27,24 +27,15 @@ make
 ⏹ Stop the infrastructure
 make down
 
-🔄 Rebuild everything
-make re
-
 3. Accessing the Website and Admin Panel
 🌐 Website
 
 Open a browser and navigate to:
 
-https://<login>.42.fr
-
-
-Example:
-
-https://wil.42.fr
+https://hchouai.42.fr
 
 🔐 WordPress Admin Panel
-https://<login>.42.fr/wp-admin
-
+https://hchouai.42.fr/wp-admin
 
 Use the administrator credentials defined during the initial WordPress setup.
 

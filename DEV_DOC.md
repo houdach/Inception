@@ -77,12 +77,12 @@ Persistent data is stored on the host using bind-mounted volumes:
 
 MariaDB
 
-/home/<login>/data/mariadb
+/home/hchouai/data/mariadb
 
 
 WordPress
 
-/home/<login>/data/wordpress
+/home/hchouai/data/wordpress
 
 
 Data remains available even after container removal.
@@ -96,6 +96,7 @@ Custom Dockerfile for each service
 Dedicated Docker network
 
 NGINX is the only exposed service (port 443)
+    docker exec nginx openssl s_client -connect localhost:443 -tls1_3
 
 Automatic container restart on failure
 
