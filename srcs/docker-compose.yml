@@ -8,8 +8,13 @@ services:
       - db_password
       - db_root_password
     environment:
+      - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST}
       - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME}
       - WORDPRESS_DB_USER=${WORDPRESS_DB_USER}
+      - WORDPRESS_ROOT_USER=${WORDPRESS_ROOT_USER}
+      - DOMAIN_NAME=${DOMAIN_NAME}
+      - WORDPRESS_DB_PASSWORD_FILE=${WORDPRESS_DB_PASSWORD_FILE}
+      - MYSQL_ROOT_PASSWORD_FILE=${MYSQL_ROOT_PASSWORD_FILE}
     volumes:
       - mariadb_data:/var/lib/mysql
     networks:
@@ -29,6 +34,7 @@ services:
       WORDPRESS_ROOT_USER: ${WORDPRESS_ROOT_USER}
       DOMAIN_NAME: ${DOMAIN_NAME}
       WORDPRESS_DB_PASSWORD_FILE: ${WORDPRESS_DB_PASSWORD_FILE}
+      MYSQL_ROOT_PASSWORD_FILE : ${MYSQL_ROOT_PASSWORD_FILE}
     volumes:
       - wordpress_data:/var/www/html
     networks:
@@ -56,7 +62,7 @@ services:
     networks:
       - inception
     restart: always
-    
+
 secrets:
   db_password:
     file: ../secrets/db_password
