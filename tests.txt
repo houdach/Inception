@@ -9,3 +9,4 @@ RUN apt update && apt install -y php-fpm php-mysql php-cli php-mbstring php-xml 
     && php-fpm -v \
     && rm -rf /var/lib/apt/lists/*
 nginx -g -daemon off
+ docker exec nginx openssl s_client -connect localhost:443 -tls1_3

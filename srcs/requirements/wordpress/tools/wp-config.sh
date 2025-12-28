@@ -16,7 +16,7 @@ if [ ! -f wp-config.php ]; then
     wp config create --allow-root \
         --dbname=$WORDPRESS_DB_NAME \
         --dbuser=$WORDPRESS_DB_USER \
-        --dbpass="" \
+        --dbpass=$DB_PASS \
         --dbhost=$WORDPRESS_DB_HOST
 
     echo "Installing WordPress core..."
