@@ -147,7 +147,7 @@ Data survives container removal and rebuilds.
 
 ## Live Demo
 
-👉 [Open interactive demo →](https://hchouai.github.io/inception/)
+👉 [Open interactive demo →](https://houdach.github.io/Inception/)
 
 ---
 
